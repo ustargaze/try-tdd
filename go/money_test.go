@@ -72,3 +72,17 @@ func TestAdditionOfDollarsAndEuros(t *testing.T) {
 
 	assertEqual(t, excepted, actual)
 }
+
+func TestAdditionOfDollarsAndWons(t *testing.T) {
+	var portfolio stocks.Portfolio
+
+	fiveDollars := stocks.NewMoney(1, "USD")
+	elevenHundredWon := stocks.NewMoney(1100, "KRW")
+	portfolio = portfolio.Add(fiveDollars)
+	portfolio = portfolio.Add(elevenHundredWon)
+
+	excepted := stocks.NewMoney(2200, "KRW")
+	actual := portfolio.Evaluate("KRW")
+
+	assertEqual(t, excepted, actual)
+}
