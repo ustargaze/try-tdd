@@ -38,7 +38,7 @@ func TestDivision(t *testing.T) {
 	assertEqual(t, excepted, actual)
 }
 
-func assertEqual(t *testing.T, excepted stocks.Money, actual stocks.Money) {
+func assertEqual(t *testing.T, excepted, actual interface{}) {
 	if excepted != actual {
 		t.Errorf("Excepted %+v Got: %+v", excepted, actual)
 	}
@@ -54,7 +54,7 @@ func TestAddition(t *testing.T) {
 
 	portfolio = portfolio.Add(fiveDollars)
 	portfolio = portfolio.Add(tenDollars)
-	portfolioInDollars = portfolio.Evaluate("USD")
+	portfolioInDollars, _ = portfolio.Evaluate("USD")
 
 	assertEqual(t, fifteenDollars, portfolioInDollars)
 }
@@ -68,7 +68,7 @@ func TestAdditionOfDollarsAndEuros(t *testing.T) {
 	portfolio = portfolio.Add(tenEuros)
 
 	excepted := stocks.NewMoney(17, "USD")
-	actual := portfolio.Evaluate("USD")
+	actual, _ := portfolio.Evaluate("USD")
 
 	assertEqual(t, excepted, actual)
 }
@@ -76,13 +76,32 @@ func TestAdditionOfDollarsAndEuros(t *testing.T) {
 func TestAdditionOfDollarsAndWons(t *testing.T) {
 	var portfolio stocks.Portfolio
 
-	fiveDollars := stocks.NewMoney(1, "USD")
+	oneDollar := stocks.NewMoney(1, "USD")
 	elevenHundredWon := stocks.NewMoney(1100, "KRW")
-	portfolio = portfolio.Add(fiveDollars)
+	portfolio = portfolio.Add(oneDollar)
 	portfolio = portfolio.Add(elevenHundredWon)
 
 	excepted := stocks.NewMoney(2200, "KRW")
-	actual := portfolio.Evaluate("KRW")
+	actual, _ := portfolio.Evaluate("KRW")
 
 	assertEqual(t, excepted, actual)
+}
+
+func TestAdditionWithMultipleMissingExchangeRates(t *testing.T) {
+	var portfolio stocks.Portfolio
+
+	oneDollar := stocks.NewMoney(1, "USD")
+	oneEur := stocks.NewMoney(1, "EUR")
+	oneWon := stocks.NewMoney(1, "KRW")
+
+	portfolio = portfolio.Add(oneDollar)
+	portfolio = portfolio.Add(oneEur)
+	portfolio = portfolio.Add(oneWon)
+
+	exceptedErrorMessage := "Missing exchange rate(s):[USD->Kalganid,EUR->Kalganid,KRW->Kalganid,]"
+	_, actualError := portfolio.Evaluate("Kalganid")
+
+	if exceptedErrorMessage != actualError.Error() {
+		t.Errorf("Excepted %s Got %s", exceptedErrorMessage, actualError.Error())
+	}
 }
